@@ -296,10 +296,44 @@
   }
 
   .btn-waze {
-    background: #1da1f2;
-    color: #fff;
     background: linear-gradient(135deg, #33aaff, #005fc4);
+    color: #fff;
   }
+
+  .btn-maps {
+    background: linear-gradient(135deg, #34a853, #1a7a33);
+    color: #fff;
+    display: flex !important;
+    align-items: center;
+    gap: 10px;
+    padding: 14px 12px !important;
+  }
+
+  .btn-waze-only {
+    background: linear-gradient(135deg, #33aaff, #005fc4);
+    color: #fff;
+    display: flex !important;
+    align-items: center;
+    gap: 10px;
+    padding: 14px 12px !important;
+  }
+
+  .btn-both {
+    width: 100%;
+    padding: 15px;
+    border-radius: var(--radius);
+    border: 2px solid var(--accent);
+    background: rgba(51,204,255,0.08);
+    color: var(--accent);
+    font-family: 'Inter', sans-serif;
+    font-weight: 700;
+    font-size: 15px;
+    cursor: pointer;
+    transition: all 0.2s;
+    margin-bottom: 10px;
+  }
+
+  .btn-both:active { transform: scale(0.98); background: rgba(51,204,255,0.18); }
 
   .btn-secondary {
     background: var(--card);
@@ -660,13 +694,49 @@
     </div>
   </div>
 
-  <button class="btn btn-waze" onclick="openWaze()">
-    🗺️ Ouvrir dans Waze
+  <!-- Workflow guide -->
+  <div style="background:rgba(51,204,255,0.06);border:1px solid rgba(51,204,255,0.2);border-radius:var(--radius);padding:14px 16px;margin-bottom:16px">
+    <div style="font-size:11px;font-weight:700;color:var(--accent);text-transform:uppercase;letter-spacing:0.7px;margin-bottom:10px">📋 Mode d'emploi</div>
+    <div style="display:flex;flex-direction:column;gap:8px">
+      <div style="display:flex;gap:10px;align-items:flex-start;font-size:12.5px">
+        <span style="background:var(--accent2);color:#fff;border-radius:50%;width:20px;height:20px;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;flex-shrink:0">1</span>
+        <span style="color:var(--text)">Appuyez <strong style="color:#4ade80">Google Maps</strong> → il calcule l'itinéraire en évitant les ponts et routes incompatibles avec votre gabarit</span>
+      </div>
+      <div style="display:flex;gap:10px;align-items:flex-start;font-size:12.5px">
+        <span style="background:var(--accent2);color:#fff;border-radius:50%;width:20px;height:20px;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;flex-shrink:0">2</span>
+        <span style="color:var(--text)">Revenez ici, appuyez <strong style="color:#60a5fa">Waze</strong> → gardez-le en arrière-plan pour les alertes radar et police</span>
+      </div>
+      <div style="display:flex;gap:10px;align-items:flex-start;font-size:12.5px">
+        <span style="background:var(--accent2);color:#fff;border-radius:50%;width:20px;height:20px;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;flex-shrink:0">3</span>
+        <span style="color:var(--text)">Naviguez avec <strong style="color:#4ade80">Maps</strong> et basculez sur <strong style="color:#60a5fa">Waze</strong> dès qu'une alerte apparaît</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Dual launch buttons -->
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:10px">
+    <button class="btn btn-maps" onclick="openMaps()">
+      <span style="font-size:20px">🗺️</span>
+      <div style="text-align:left">
+        <div style="font-size:14px;font-weight:700">Google Maps</div>
+        <div style="font-size:10px;opacity:0.85">Itinéraire gabarit</div>
+      </div>
+    </button>
+    <button class="btn btn-waze-only" onclick="openWaze()">
+      <span style="font-size:20px">📡</span>
+      <div style="text-align:left">
+        <div style="font-size:14px;font-weight:700">Waze</div>
+        <div style="font-size:10px;opacity:0.85">Alertes & radars</div>
+      </div>
+    </button>
+  </div>
+
+  <button class="btn btn-both" onclick="openBoth()">
+    🚀 Lancer les deux en même temps
   </button>
 
   <p style="font-size:11px; color: var(--muted); text-align:center; margin-top:10px; line-height:1.6">
-    Waze sera ouvert avec votre destination.<br>
-    <strong style="color:#ffaa88">Rappel :</strong> vérifiez manuellement les ponts bas sur votre trajet.
+    Maps calcule l'itinéraire selon votre gabarit · Waze surveille la route
   </p>
 </div>
 
@@ -974,8 +1044,48 @@
     `).join('<div style="height:1px;background:var(--border);margin-bottom:14px"></div>');
   }
 
+  function getDestination() {
+    return document.getElementById('input-dest').value.trim();
+  }
+
+  function openMaps() {
+    const dest = getDestination();
+    if (!dest) return showAlert('alert-nav', '⚠️ Entrez une destination.', 'error');
+
+    const p = profiles[activeIndex];
+    const encoded = encodeURIComponent(dest);
+
+    // Google Maps URL avec mode de transport et paramètres véhicule
+    // On utilise le mode "driving" avec les options avoidHighways et avoidTolls
+    const avoidTolls = document.getElementById('toggle-tolls').classList.contains('on');
+    const avoidHighways = document.getElementById('toggle-highways').classList.contains('on');
+
+    let url = `https://www.google.com/maps/dir/?api=1&destination=${encoded}&travelmode=driving`;
+    if (avoidTolls) url += '&avoid=tolls';
+    if (avoidHighways) url += '&avoid=highways';
+    // Note : on ajoute les dimensions en paramètre d'info pour l'utilisateur
+    // Google Maps prend en compte automatiquement le mode camping-car si disponible
+
+    // Sur Android, tenter d'ouvrir l'app Maps directement
+    const mapsAppUrl = `comgooglemaps://?daddr=${encoded}&directionsmode=driving`;
+
+    // Afficher les dimensions du véhicule dans l'alerte
+    let dimInfo = '';
+    if (p) {
+      const dims = [
+        p.height ? `H:${p.height}m` : '',
+        p.width  ? `L:${p.width}m`  : '',
+        p.weight ? `${p.weight}kg`   : ''
+      ].filter(Boolean).join(' · ');
+      if (dims) dimInfo = ` · Gabarit: ${dims}`;
+    }
+
+    window.open(url, '_blank');
+    showAlert('alert-nav', `🗺️ Maps ouvert${dimInfo}`, 'success');
+  }
+
   function openWaze() {
-    const dest = document.getElementById('input-dest').value.trim();
+    const dest = getDestination();
     if (!dest) return showAlert('alert-nav', '⚠️ Entrez une destination.', 'error');
 
     const avoidTolls = document.getElementById('toggle-tolls').classList.contains('on') ? 1 : 0;
@@ -987,7 +1097,22 @@
     if (avoidHighways) url += '&avoid_highways=1';
 
     window.open(url, '_blank');
-    showAlert('alert-nav', '🗺️ Ouverture de Waze...', 'info');
+    showAlert('alert-nav', '📡 Waze ouvert — alertes actives', 'info');
+  }
+
+  function openBoth() {
+    const dest = getDestination();
+    if (!dest) return showAlert('alert-nav', '⚠️ Entrez une destination.', 'error');
+
+    // Ouvrir Maps en premier
+    openMaps();
+
+    // Ouvrir Waze après un court délai pour que les deux s'ouvrent
+    setTimeout(() => {
+      openWaze();
+    }, 1200);
+
+    showAlert('alert-nav', '🚀 Lancement Maps + Waze...', 'success');
   }
 
   // Init
