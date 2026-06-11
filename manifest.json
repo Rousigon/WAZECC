@@ -2,7 +2,8 @@
   "name": "WazeCC – Camping-Car",
   "short_name": "WazeCC",
   "description": "Compagnon Waze pour camping-car : profils de véhicule, restrictions et navigation",
-  "start_url": "/index.html",
+  "start_url": "/WAZECC/index.html",
+  "scope": "/WAZECC/",
   "display": "standalone",
   "background_color": "#0f1117",
   "theme_color": "#0099cc",
@@ -28,7 +29,7 @@
       "name": "Navigation rapide",
       "short_name": "Naviguer",
       "description": "Ouvrir directement la navigation",
-      "url": "/index.html#navigation",
+      "url": "/WAZECC/index.html#navigation",
       "icons": [{ "src": "icon-192.png", "sizes": "192x192" }]
     }
   ]

@@ -1,12 +1,12 @@
 const CACHE_NAME = 'wazecc-v1';
+const BASE = '/WAZECC';
 const ASSETS = [
-  '/index.html',
-  '/manifest.json',
-  '/icon-192.png',
-  '/icon-512.png'
+  BASE + '/index.html',
+  BASE + '/manifest.json',
+  BASE + '/icon-192.png',
+  BASE + '/icon-512.png'
 ];
 
-// Installation : mise en cache des fichiers
 self.addEventListener('install', event => {
   event.waitUntil(
     caches.open(CACHE_NAME).then(cache => cache.addAll(ASSETS))
@@ -14,7 +14,6 @@ self.addEventListener('install', event => {
   self.skipWaiting();
 });
 
-// Activation : nettoyage des anciens caches
 self.addEventListener('activate', event => {
   event.waitUntil(
     caches.keys().then(keys =>
@@ -24,9 +23,7 @@ self.addEventListener('activate', event => {
   self.clients.claim();
 });
 
-// Fetch : répondre depuis le cache en priorité (offline first)
 self.addEventListener('fetch', event => {
-  // Ne pas intercepter les requêtes vers Waze ou Google Fonts
   if (event.request.url.includes('waze.com') ||
       event.request.url.includes('fonts.googleapis.com') ||
       event.request.url.includes('fonts.gstatic.com')) {
@@ -37,13 +34,12 @@ self.addEventListener('fetch', event => {
     caches.match(event.request).then(cached => {
       if (cached) return cached;
       return fetch(event.request).then(response => {
-        // Mettre en cache les nouvelles ressources
         if (response && response.status === 200) {
           const clone = response.clone();
           caches.open(CACHE_NAME).then(cache => cache.put(event.request, clone));
         }
         return response;
-      }).catch(() => caches.match('/index.html'));
+      }).catch(() => caches.match(BASE + '/index.html'));
     })
   );
 });
