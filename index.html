@@ -1,0 +1,1043 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>WazeCC – Camping-Car</title>
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#0099cc">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="WazeCC">
+<link rel="apple-touch-icon" href="icon-192.png">
+<meta name="mobile-web-app-capable" content="yes">
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Space+Grotesk:wght@600;700&display=swap');
+
+  :root {
+    --bg: #0f1117;
+    --card: #1a1d27;
+    --border: #2a2d3a;
+    --accent: #33ccff;
+    --accent2: #0099cc;
+    --warn: #ff6b35;
+    --green: #2ecc71;
+    --text: #e8eaf0;
+    --muted: #7a7f96;
+    --radius: 14px;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Inter', sans-serif;
+    min-height: 100vh;
+    padding: 20px 16px 40px;
+  }
+
+  header {
+    text-align: center;
+    padding: 24px 0 28px;
+  }
+
+  .logo {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 8px;
+  }
+
+  .logo-icon {
+    width: 42px; height: 42px;
+    background: linear-gradient(135deg, var(--accent), var(--accent2));
+    border-radius: 12px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 22px;
+  }
+
+  .logo-text {
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 26px;
+    font-weight: 700;
+    letter-spacing: -0.5px;
+  }
+
+  .logo-text span { color: var(--accent); }
+
+  header p {
+    color: var(--muted);
+    font-size: 13px;
+  }
+
+  /* TABS */
+  .tabs {
+    display: flex;
+    background: var(--card);
+    border-radius: var(--radius);
+    padding: 4px;
+    margin-bottom: 20px;
+    border: 1px solid var(--border);
+  }
+
+  .tab {
+    flex: 1;
+    padding: 10px 6px;
+    border-radius: 10px;
+    border: none;
+    background: transparent;
+    color: var(--muted);
+    font-family: 'Inter', sans-serif;
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+
+  .tab.active {
+    background: var(--accent2);
+    color: #fff;
+    font-weight: 600;
+  }
+
+  /* PANEL */
+  .panel { display: none; }
+  .panel.active { display: block; }
+
+  /* VEHICLE SELECTOR */
+  .vehicle-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 10px;
+    margin-bottom: 20px;
+  }
+
+  .vehicle-card {
+    background: var(--card);
+    border: 2px solid var(--border);
+    border-radius: var(--radius);
+    padding: 16px 12px;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+
+  .vehicle-card.selected {
+    border-color: var(--accent);
+    background: rgba(51,204,255,0.08);
+  }
+
+  .vehicle-card .icon { font-size: 28px; margin-bottom: 6px; }
+  .vehicle-card .label { font-size: 12px; font-weight: 600; color: var(--muted); }
+  .vehicle-card.selected .label { color: var(--accent); }
+
+  /* SAVED PROFILES */
+  .profiles-list { margin-bottom: 16px; }
+
+  .profile-item {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 14px 16px;
+    margin-bottom: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    cursor: pointer;
+    transition: border-color 0.2s;
+  }
+
+  .profile-item:hover { border-color: var(--accent); }
+  .profile-item.active-profile { border-color: var(--green); }
+
+  .profile-left { display: flex; align-items: center; gap: 12px; }
+  .profile-icon { font-size: 22px; }
+  .profile-name { font-weight: 600; font-size: 15px; }
+  .profile-dims { font-size: 11px; color: var(--muted); margin-top: 2px; }
+
+  .profile-actions { display: flex; gap: 8px; }
+
+  .btn-icon {
+    background: none;
+    border: 1px solid var(--border);
+    color: var(--muted);
+    width: 32px; height: 32px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 14px;
+    display: flex; align-items: center; justify-content: center;
+    transition: all 0.2s;
+  }
+
+  .btn-icon:hover { border-color: var(--accent); color: var(--accent); }
+  .btn-icon.danger:hover { border-color: var(--warn); color: var(--warn); }
+
+  /* FORM */
+  .form-section {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 18px;
+    margin-bottom: 16px;
+  }
+
+  .form-section-title {
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--accent);
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
+    margin-bottom: 14px;
+  }
+
+  .field { margin-bottom: 14px; }
+  .field:last-child { margin-bottom: 0; }
+
+  label {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--muted);
+    margin-bottom: 6px;
+  }
+
+  .field-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+  }
+
+  input[type="text"],
+  input[type="number"],
+  select {
+    width: 100%;
+    background: var(--bg);
+    border: 1.5px solid var(--border);
+    border-radius: 10px;
+    color: var(--text);
+    font-family: 'Inter', sans-serif;
+    font-size: 15px;
+    padding: 11px 14px;
+    outline: none;
+    transition: border-color 0.2s;
+    -webkit-appearance: none;
+  }
+
+  input:focus, select:focus { border-color: var(--accent); }
+
+  .input-unit {
+    position: relative;
+  }
+
+  .input-unit input { padding-right: 44px; }
+
+  .unit-label {
+    position: absolute;
+    right: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    font-size: 12px;
+    color: var(--muted);
+    font-weight: 500;
+    pointer-events: none;
+  }
+
+  /* WARNING BANNER */
+  .warning-banner {
+    background: rgba(255,107,53,0.12);
+    border: 1px solid rgba(255,107,53,0.4);
+    border-radius: var(--radius);
+    padding: 12px 14px;
+    margin-bottom: 16px;
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    font-size: 12px;
+    color: #ffaa88;
+    display: none;
+  }
+
+  .warning-banner.show { display: flex; }
+
+  /* BUTTONS */
+  .btn {
+    width: 100%;
+    padding: 15px;
+    border-radius: var(--radius);
+    border: none;
+    font-family: 'Inter', sans-serif;
+    font-weight: 600;
+    font-size: 15px;
+    cursor: pointer;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+  }
+
+  .btn-primary {
+    background: linear-gradient(135deg, var(--accent), var(--accent2));
+    color: #fff;
+    margin-bottom: 10px;
+  }
+
+  .btn-primary:active { transform: scale(0.98); }
+
+  .btn-save {
+    background: rgba(46,204,113,0.15);
+    border: 1.5px solid var(--green);
+    color: var(--green);
+    margin-bottom: 10px;
+  }
+
+  .btn-waze {
+    background: #1da1f2;
+    color: #fff;
+    background: linear-gradient(135deg, #33aaff, #005fc4);
+  }
+
+  .btn-secondary {
+    background: var(--card);
+    border: 1.5px solid var(--border);
+    color: var(--text);
+  }
+
+  /* SUMMARY CARD */
+  .summary-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 16px;
+    margin-bottom: 16px;
+  }
+
+  .summary-title {
+    font-size: 11px;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 0.6px;
+    margin-bottom: 12px;
+  }
+
+  .summary-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 10px;
+  }
+
+  .summary-item {
+    text-align: center;
+  }
+
+  .summary-value {
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 20px;
+    font-weight: 700;
+    color: var(--accent);
+  }
+
+  .summary-unit {
+    font-size: 10px;
+    color: var(--muted);
+    margin-top: 2px;
+  }
+
+  /* DESTINATION */
+  .dest-input-wrap {
+    position: relative;
+    margin-bottom: 16px;
+  }
+
+  .dest-input-wrap input {
+    padding-left: 42px;
+    font-size: 15px;
+  }
+
+  .dest-icon {
+    position: absolute;
+    left: 14px;
+    top: 50%;
+    transform: translateY(-50%);
+    font-size: 18px;
+    pointer-events: none;
+  }
+
+  /* ALERT */
+  .alert {
+    padding: 12px 14px;
+    border-radius: var(--radius);
+    font-size: 13px;
+    margin-bottom: 14px;
+    display: none;
+  }
+
+  .alert.show { display: block; }
+  .alert.success { background: rgba(46,204,113,0.12); border: 1px solid var(--green); color: #80ffb4; }
+  .alert.error { background: rgba(255,107,53,0.12); border: 1px solid var(--warn); color: #ffaa88; }
+  .alert.info { background: rgba(51,204,255,0.08); border: 1px solid rgba(51,204,255,0.3); color: var(--accent); }
+
+  /* TOGGLE */
+  .toggle-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 4px 0;
+  }
+
+  .toggle-label { font-size: 13px; color: var(--text); }
+  .toggle-sub { font-size: 11px; color: var(--muted); margin-top: 2px; }
+
+  .toggle {
+    width: 44px; height: 24px;
+    background: var(--border);
+    border-radius: 12px;
+    position: relative;
+    cursor: pointer;
+    transition: background 0.2s;
+    flex-shrink: 0;
+  }
+
+  .toggle.on { background: var(--accent2); }
+
+  .toggle::after {
+    content: '';
+    position: absolute;
+    width: 18px; height: 18px;
+    background: #fff;
+    border-radius: 50%;
+    top: 3px; left: 3px;
+    transition: left 0.2s;
+  }
+
+  .toggle.on::after { left: 23px; }
+
+  /* DIVIDER */
+  .divider {
+    height: 1px;
+    background: var(--border);
+    margin: 14px 0;
+  }
+
+  /* MODAL */
+  .modal-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.7);
+    z-index: 100;
+    align-items: flex-end;
+    padding: 0;
+  }
+
+  .modal-overlay.show { display: flex; }
+
+  .modal {
+    background: var(--card);
+    border-top-left-radius: 20px;
+    border-top-right-radius: 20px;
+    padding: 24px 20px 36px;
+    width: 100%;
+    border-top: 1px solid var(--border);
+  }
+
+  .modal-handle {
+    width: 40px; height: 4px;
+    background: var(--border);
+    border-radius: 2px;
+    margin: 0 auto 20px;
+  }
+
+  .modal-title {
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 18px;
+    font-weight: 700;
+    margin-bottom: 16px;
+  }
+
+  .empty-state {
+    text-align: center;
+    padding: 30px 20px;
+    color: var(--muted);
+  }
+
+  .empty-state .empty-icon { font-size: 40px; margin-bottom: 10px; }
+  .empty-state p { font-size: 13px; }
+
+  select option { background: #1a1d27; }
+</style>
+</head>
+<body>
+
+<div id="install-banner" style="display:none;background:linear-gradient(135deg,#0099cc,#33ccff);padding:12px 16px;border-radius:14px;margin-bottom:16px;display:flex;align-items:center;justify-content:space-between;gap:10px">
+  <div style="font-size:13px;font-weight:600;color:#fff">📲 Installer WazeCC sur votre téléphone</div>
+  <button id="install-btn" style="background:#fff;color:#0099cc;border:none;border-radius:8px;padding:8px 14px;font-weight:700;font-size:13px;cursor:pointer">Installer</button>
+</div>
+<header>
+  <div class="logo">
+    <div class="logo-icon">🚐</div>
+    <div class="logo-text">Waze<span>CC</span></div>
+  </div>
+  <p>Compagnon Waze pour camping-car</p>
+</header>
+
+<div class="tabs">
+  <button class="tab active" onclick="switchTab('profils')">🚐 Profils</button>
+  <button class="tab" onclick="switchTab('nouveau')">➕ Nouveau</button>
+  <button class="tab" onclick="switchTab('navigation')">🗺️ Navigation</button>
+</div>
+
+<!-- PANEL PROFILS -->
+<div class="panel active" id="panel-profils">
+
+  <div id="alert-profils" class="alert"></div>
+
+  <div id="profiles-list" class="profiles-list">
+    <!-- populated by JS -->
+  </div>
+
+  <div id="empty-profiles" class="empty-state" style="display:none">
+    <div class="empty-icon">🚐</div>
+    <p>Aucun profil enregistré.<br>Créez votre premier véhicule !</p>
+  </div>
+
+  <button class="btn btn-secondary" onclick="switchTab('nouveau')">
+    ➕ Ajouter un véhicule
+  </button>
+</div>
+
+<!-- PANEL NOUVEAU -->
+<div class="panel" id="panel-nouveau">
+
+  <div id="alert-nouveau" class="alert"></div>
+
+  <!-- Type véhicule -->
+  <div class="form-section">
+    <div class="form-section-title">Type de véhicule</div>
+    <div class="vehicle-grid">
+      <div class="vehicle-card selected" data-type="camping-car" onclick="selectVehicle(this)">
+        <div class="icon">🚐</div>
+        <div class="label">Camping-car</div>
+      </div>
+      <div class="vehicle-card" data-type="fourgon" onclick="selectVehicle(this)">
+        <div class="icon">🚌</div>
+        <div class="label">Fourgon</div>
+      </div>
+      <div class="vehicle-card" data-type="caravane" onclick="selectVehicle(this)">
+        <div class="icon">🚛</div>
+        <div class="label">Caravane</div>
+      </div>
+      <div class="vehicle-card" data-type="camion" onclick="selectVehicle(this)">
+        <div class="icon">🚚</div>
+        <div class="label">Camion</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Infos véhicule -->
+  <div class="form-section">
+    <div class="form-section-title">Informations</div>
+    <div class="field">
+      <label>🏷️ Modèle du véhicule</label>
+      <input type="text" id="input-model" placeholder="Ex: Fiat Ducato 2.8m">
+    </div>
+    <div class="field">
+      <label>🎨 Surnom (optionnel)</label>
+      <input type="text" id="input-nickname" placeholder="Ex: Mon camping-car">
+    </div>
+  </div>
+
+  <!-- Dimensions -->
+  <div class="form-section">
+    <div class="form-section-title">Dimensions</div>
+
+    <div id="height-warning" class="warning-banner">
+      ⚠️ Hauteur &gt; 3m : attention aux tunnels et parkings couverts.
+    </div>
+
+    <div class="field-row">
+      <div class="field">
+        <label>📏 Hauteur</label>
+        <div class="input-unit">
+          <input type="number" id="input-height" placeholder="2.80" step="0.01" min="1" max="5" oninput="checkHeight(this)">
+          <span class="unit-label">m</span>
+        </div>
+      </div>
+      <div class="field">
+        <label>↔️ Largeur</label>
+        <div class="input-unit">
+          <input type="number" id="input-width" placeholder="2.30" step="0.01" min="1" max="4">
+          <span class="unit-label">m</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="field">
+      <label>📐 Longueur</label>
+      <div class="input-unit">
+        <input type="number" id="input-length" placeholder="6.50" step="0.01" min="2" max="20">
+        <span class="unit-label">m</span>
+      </div>
+    </div>
+
+    <div class="field">
+      <label>⚖️ Poids total (PTAC)</label>
+      <div class="input-unit">
+        <input type="number" id="input-weight" placeholder="3500" step="50" min="500" max="40000">
+        <span class="unit-label">kg</span>
+      </div>
+    </div>
+  </div>
+
+  <button class="btn btn-save" onclick="saveProfile()">
+    💾 Enregistrer ce véhicule
+  </button>
+  <button class="btn btn-secondary" onclick="switchTab('profils')">
+    ← Retour
+  </button>
+</div>
+
+<!-- PANEL NAVIGATION -->
+<div class="panel" id="panel-navigation">
+
+  <div id="alert-nav" class="alert"></div>
+
+  <!-- Véhicule actif -->
+  <div id="no-vehicle-msg" class="alert info show">
+    ⚠️ Aucun véhicule sélectionné. Allez dans Profils pour en choisir un.
+  </div>
+
+  <div id="active-summary" class="summary-card" style="display:none">
+    <div class="summary-title">🚐 Véhicule actif : <span id="active-name">—</span></div>
+    <div class="summary-grid">
+      <div class="summary-item">
+        <div class="summary-value" id="sum-height">—</div>
+        <div class="summary-unit">Hauteur (m)</div>
+      </div>
+      <div class="summary-item">
+        <div class="summary-value" id="sum-width">—</div>
+        <div class="summary-unit">Largeur (m)</div>
+      </div>
+      <div class="summary-item">
+        <div class="summary-value" id="sum-weight">—</div>
+        <div class="summary-unit">Poids (kg)</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Destination -->
+  <div class="form-section">
+    <div class="form-section-title">Destination</div>
+    <div class="dest-input-wrap">
+      <span class="dest-icon">📍</span>
+      <input type="text" id="input-dest" placeholder="Adresse ou lieu de destination">
+    </div>
+
+    <div class="toggle-row">
+      <div>
+        <div class="toggle-label">Éviter les péages</div>
+      </div>
+      <div class="toggle" id="toggle-tolls" onclick="toggleSwitch(this)"></div>
+    </div>
+    <div class="divider"></div>
+    <div class="toggle-row">
+      <div>
+        <div class="toggle-label">Éviter les autoroutes</div>
+      </div>
+      <div class="toggle" id="toggle-highways" onclick="toggleSwitch(this)"></div>
+    </div>
+  </div>
+
+  <!-- Rappel limitations -->
+  <div class="form-section">
+    <div class="form-section-title">⚠️ Rappel limitations</div>
+    <div id="restrictions-list" style="font-size:13px; color: var(--muted); line-height: 1.8;">
+      Sélectionnez un véhicule pour voir les restrictions applicables.
+    </div>
+  </div>
+
+  <button class="btn btn-waze" onclick="openWaze()">
+    🗺️ Ouvrir dans Waze
+  </button>
+
+  <p style="font-size:11px; color: var(--muted); text-align:center; margin-top:10px; line-height:1.6">
+    Waze sera ouvert avec votre destination.<br>
+    <strong style="color:#ffaa88">Rappel :</strong> vérifiez manuellement les ponts bas sur votre trajet.
+  </p>
+</div>
+
+<!-- MODAL EDIT -->
+<div class="modal-overlay" id="edit-modal">
+  <div class="modal">
+    <div class="modal-handle"></div>
+    <div class="modal-title">✏️ Modifier le véhicule</div>
+    <input type="hidden" id="edit-index">
+
+    <div class="field">
+      <label>🏷️ Modèle</label>
+      <input type="text" id="edit-model" placeholder="Modèle">
+    </div>
+    <div class="field">
+      <label>🎨 Surnom</label>
+      <input type="text" id="edit-nickname" placeholder="Surnom">
+    </div>
+    <div class="field-row">
+      <div class="field">
+        <label>📏 Hauteur (m)</label>
+        <input type="number" id="edit-height" step="0.01">
+      </div>
+      <div class="field">
+        <label>↔️ Largeur (m)</label>
+        <input type="number" id="edit-width" step="0.01">
+      </div>
+    </div>
+    <div class="field">
+      <label>📐 Longueur (m)</label>
+      <input type="number" id="edit-length" step="0.01">
+    </div>
+    <div class="field">
+      <label>⚖️ Poids (kg)</label>
+      <input type="number" id="edit-weight" step="50">
+    </div>
+    <div style="height:12px"></div>
+    <button class="btn btn-primary" onclick="saveEdit()">💾 Enregistrer</button>
+    <button class="btn btn-secondary" onclick="closeModal()" style="margin-top:8px">Annuler</button>
+  </div>
+</div>
+
+<script>
+  let profiles = JSON.parse(localStorage.getItem('waze_cc_profiles') || '[]');
+  let activeIndex = parseInt(localStorage.getItem('waze_cc_active') ?? '-1');
+  let selectedVehicleType = 'camping-car';
+
+  const VEHICLE_ICONS = {
+    'camping-car': '🚐',
+    'fourgon': '🚌',
+    'caravane': '🚛',
+    'camion': '🚚'
+  };
+
+  function save() {
+    localStorage.setItem('waze_cc_profiles', JSON.stringify(profiles));
+    localStorage.setItem('waze_cc_active', activeIndex);
+  }
+
+  function switchTab(tab) {
+    document.querySelectorAll('.tab').forEach((t, i) => {
+      t.classList.toggle('active', ['profils','nouveau','navigation'][i] === tab);
+    });
+    document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+    document.getElementById('panel-' + tab).classList.add('active');
+    if (tab === 'navigation') updateNavPanel();
+    if (tab === 'profils') renderProfiles();
+  }
+
+  function selectVehicle(el) {
+    document.querySelectorAll('.vehicle-card').forEach(c => c.classList.remove('selected'));
+    el.classList.add('selected');
+    selectedVehicleType = el.dataset.type;
+  }
+
+  function checkHeight(input) {
+    const val = parseFloat(input.value);
+    const warn = document.getElementById('height-warning');
+    warn.classList.toggle('show', val > 3);
+  }
+
+  function showAlert(id, msg, type) {
+    const el = document.getElementById(id);
+    el.className = 'alert ' + type + ' show';
+    el.textContent = msg;
+    setTimeout(() => { el.classList.remove('show'); }, 3000);
+  }
+
+  function saveProfile() {
+    const model = document.getElementById('input-model').value.trim();
+    const nickname = document.getElementById('input-nickname').value.trim();
+    const height = parseFloat(document.getElementById('input-height').value);
+    const width = parseFloat(document.getElementById('input-width').value);
+    const length = parseFloat(document.getElementById('input-length').value);
+    const weight = parseFloat(document.getElementById('input-weight').value);
+
+    if (!model) return showAlert('alert-nouveau', '⚠️ Entrez le modèle du véhicule.', 'error');
+    if (!height || !width || !length) return showAlert('alert-nouveau', '⚠️ Remplissez les dimensions (hauteur, largeur, longueur).', 'error');
+
+    profiles.push({ type: selectedVehicleType, model, nickname, height, width, length, weight: weight || null });
+    if (profiles.length === 1) activeIndex = 0;
+    save();
+
+    showAlert('alert-nouveau', '✅ Véhicule enregistré !', 'success');
+    document.getElementById('input-model').value = '';
+    document.getElementById('input-nickname').value = '';
+    document.getElementById('input-height').value = '';
+    document.getElementById('input-width').value = '';
+    document.getElementById('input-length').value = '';
+    document.getElementById('input-weight').value = '';
+
+    setTimeout(() => switchTab('profils'), 1200);
+  }
+
+  function renderProfiles() {
+    const list = document.getElementById('profiles-list');
+    const empty = document.getElementById('empty-profiles');
+
+    if (profiles.length === 0) {
+      list.innerHTML = '';
+      empty.style.display = 'block';
+      return;
+    }
+    empty.style.display = 'none';
+
+    list.innerHTML = profiles.map((p, i) => {
+      const name = p.nickname || p.model;
+      const dims = [
+        p.height ? `H: ${p.height}m` : '',
+        p.width ? `L: ${p.width}m` : '',
+        p.length ? `Long: ${p.length}m` : '',
+        p.weight ? `${p.weight}kg` : ''
+      ].filter(Boolean).join(' · ');
+
+      return `
+        <div class="profile-item ${i === activeIndex ? 'active-profile' : ''}" onclick="setActive(${i})">
+          <div class="profile-left">
+            <div class="profile-icon">${VEHICLE_ICONS[p.type] || '🚐'}</div>
+            <div>
+              <div class="profile-name">${name} ${i === activeIndex ? '<span style="color:var(--green);font-size:11px">● Actif</span>' : ''}</div>
+              <div class="profile-dims">${p.model}${p.nickname ? ' · ' + p.model : ''}</div>
+              <div class="profile-dims">${dims}</div>
+            </div>
+          </div>
+          <div class="profile-actions" onclick="event.stopPropagation()">
+            <button class="btn-icon" onclick="openEdit(${i})">✏️</button>
+            <button class="btn-icon danger" onclick="deleteProfile(${i})">🗑️</button>
+          </div>
+        </div>
+      `;
+    }).join('');
+  }
+
+  function setActive(i) {
+    activeIndex = i;
+    save();
+    renderProfiles();
+    showAlert('alert-profils', '✅ Véhicule activé !', 'success');
+  }
+
+  function deleteProfile(i) {
+    if (!confirm('Supprimer ce véhicule ?')) return;
+    profiles.splice(i, 1);
+    if (activeIndex >= profiles.length) activeIndex = profiles.length - 1;
+    save();
+    renderProfiles();
+  }
+
+  function openEdit(i) {
+    const p = profiles[i];
+    document.getElementById('edit-index').value = i;
+    document.getElementById('edit-model').value = p.model;
+    document.getElementById('edit-nickname').value = p.nickname || '';
+    document.getElementById('edit-height').value = p.height || '';
+    document.getElementById('edit-width').value = p.width || '';
+    document.getElementById('edit-length').value = p.length || '';
+    document.getElementById('edit-weight').value = p.weight || '';
+    document.getElementById('edit-modal').classList.add('show');
+  }
+
+  function saveEdit() {
+    const i = parseInt(document.getElementById('edit-index').value);
+    profiles[i].model = document.getElementById('edit-model').value.trim();
+    profiles[i].nickname = document.getElementById('edit-nickname').value.trim();
+    profiles[i].height = parseFloat(document.getElementById('edit-height').value) || null;
+    profiles[i].width = parseFloat(document.getElementById('edit-width').value) || null;
+    profiles[i].length = parseFloat(document.getElementById('edit-length').value) || null;
+    profiles[i].weight = parseFloat(document.getElementById('edit-weight').value) || null;
+    save();
+    closeModal();
+    renderProfiles();
+  }
+
+  function closeModal() {
+    document.getElementById('edit-modal').classList.remove('show');
+  }
+
+  function toggleSwitch(el) {
+    el.classList.toggle('on');
+  }
+
+  function updateNavPanel() {
+    const noVeh = document.getElementById('no-vehicle-msg');
+    const summary = document.getElementById('active-summary');
+    const restrictions = document.getElementById('restrictions-list');
+
+    if (activeIndex < 0 || !profiles[activeIndex]) {
+      noVeh.classList.add('show');
+      summary.style.display = 'none';
+      restrictions.innerHTML = 'Sélectionnez un véhicule pour voir les restrictions.';
+      return;
+    }
+
+    noVeh.classList.remove('show');
+    summary.style.display = 'block';
+    const p = profiles[activeIndex];
+    const name = p.nickname || p.model;
+    document.getElementById('active-name').textContent = name;
+    document.getElementById('sum-height').textContent = p.height || '—';
+    document.getElementById('sum-width').textContent = p.width || '—';
+    document.getElementById('sum-weight').textContent = p.weight || '—';
+
+    // ── Restrictions précises basées sur les données du véhicule ──
+    const h = p.height;
+    const w = p.width;
+    const l = p.length;
+    const kg = p.weight;
+    const t = kg ? kg / 1000 : null;
+
+    let sections = [];
+
+    // ── HAUTEUR ──
+    if (h) {
+      let items = [];
+      // Tunnels & ponts courants
+      if (h > 4.3)       items.push({ level:'🔴', text:`Votre hauteur (${h}m) dépasse les 4.3m : vous êtes hors gabarit standard. Autoroutes et tunnels très limités.` });
+      else if (h > 3.5)  items.push({ level:'🔴', text:`Votre hauteur (${h}m) dépasse 3.5m : nombreux tunnels et passages inférieurs interdits.` });
+      else if (h > 3.0)  items.push({ level:'🟠', text:`Votre hauteur (${h}m) dépasse 3m : certains tunnels (ex: A86 duplex limité à 2m), passages sous pont à vérifier.` });
+      else if (h > 2.5)  items.push({ level:'🟡', text:`Votre hauteur (${h}m) dépasse 2.5m : barrières de parkings couverts souvent à 2m ou 2.5m, vérifiez avant d'entrer.` });
+      else               items.push({ level:'✅', text:`Hauteur (${h}m) : compatible avec la majorité des parkings (barrières à 2m standard) et tunnels.` });
+
+      // Parkings spécifiques
+      if (h > 2.0) items.push({ level:'ℹ️', text:`Parkings couverts : la limite standard est 2.0m. Votre véhicule (${h}m) ne peut pas y entrer.` });
+      if (h > 2.5) items.push({ level:'ℹ️', text:`Stations de lavage automatiques : généralement limitées à 2.5m. Non compatible avec votre véhicule (${h}m).` });
+
+      sections.push({ title: '📏 Hauteur', items });
+    }
+
+    // ── LARGEUR ──
+    if (w) {
+      let items = [];
+      if (w > 3.0)       items.push({ level:'🔴', text:`Votre largeur (${w}m) dépasse 3m : véhicule hors gabarit, nombreuses voies urbaines inaccessibles.` });
+      else if (w > 2.55) items.push({ level:'🟠', text:`Votre largeur (${w}m) dépasse 2.55m (limite légale PL en Europe) : routes étroites et certaines voies de montagne à éviter.` });
+      else if (w > 2.3)  items.push({ level:'🟡', text:`Votre largeur (${w}m) : ruelles de villages et voies à sens unique étroites à aborder avec précaution.` });
+      else               items.push({ level:'✅', text:`Largeur (${w}m) : compatible avec les voies standard.` });
+
+      sections.push({ title: '↔️ Largeur', items });
+    }
+
+    // ── LONGUEUR ──
+    if (l) {
+      let items = [];
+      if (l > 15)        items.push({ level:'🔴', text:`Votre longueur (${l}m) : véhicule long. Demi-tours impossibles dans beaucoup de rues, planifiez vos itinéraires en amont.` });
+      else if (l > 12)   items.push({ level:'🟠', text:`Votre longueur (${l}m) dépasse 12m : ronds-points serrés et ruelles difficiles. Évitez les centres historiques.` });
+      else if (l > 8)    items.push({ level:'🟡', text:`Votre longueur (${l}m) : manœuvres en zone urbaine à anticiper. Aires de camping adaptées recommandées.` });
+      else if (l > 6)    items.push({ level:'🟡', text:`Votre longueur (${l}m) : attention aux stationnements limités en longueur (souvent 6m maxi en zone bleue).` });
+      else               items.push({ level:'✅', text:`Longueur (${l}m) : compatible avec la plupart des voies.` });
+
+      // Ferries / aires
+      if (l > 7) items.push({ level:'ℹ️', text:`Ferries et aires de camping : indiquez votre longueur (${l}m) à la réservation, des suppléments peuvent s'appliquer.` });
+
+      sections.push({ title: '📐 Longueur', items });
+    }
+
+    // ── POIDS ──
+    if (kg) {
+      let items = [];
+      if (kg > 19000)    items.push({ level:'🔴', text:`Votre poids (${kg}kg / ${t.toFixed(1)}T) : nombreuses routes et ponts limités à 19T ou moins. Itinéraire poids lourd obligatoire.` });
+      else if (kg > 7500)items.push({ level:'🔴', text:`Votre poids (${kg}kg / ${t.toFixed(1)}T) dépasse 7.5T : routes à tonnage limité très fréquentes hors axes principaux. Vérifiez chaque route secondaire.` });
+      else if (kg > 3500)items.push({ level:'🟠', text:`Votre poids (${kg}kg / ${t.toFixed(1)}T) dépasse 3.5T : certains ponts communaux et routes forestières limités à 3.5T. Vérifiez les panneaux.` });
+      else if (kg > 2000)items.push({ level:'🟡', text:`Votre poids (${kg}kg) : compatible avec la majorité des routes. Quelques parkings souterrains limités à 2T, vérifiez.` });
+      else               items.push({ level:'✅', text:`Poids (${kg}kg) : aucune restriction de poids habituelle.` });
+
+      // Permis
+      if (kg > 3500) items.push({ level:'ℹ️', text:`Permis requis : au-delà de 3.5T (${kg}kg), le permis B seul ne suffit plus — vérifiez votre permis (C1, C…).` });
+
+      sections.push({ title: '⚖️ Poids', items });
+    }
+
+    if (sections.length === 0) {
+      restrictions.innerHTML = '<div style="color:var(--muted)">Aucune dimension renseignée. Éditez votre profil pour voir les restrictions.</div>';
+      return;
+    }
+
+    restrictions.innerHTML = sections.map(s => `
+      <div style="margin-bottom:14px">
+        <div style="font-size:11px;font-weight:700;color:var(--accent);text-transform:uppercase;letter-spacing:0.7px;margin-bottom:6px">${s.title}</div>
+        ${s.items.map(it => `
+          <div style="display:flex;gap:8px;margin-bottom:6px;font-size:12.5px;line-height:1.5">
+            <span style="flex-shrink:0">${it.level}</span>
+            <span style="color:var(--text)">${it.text}</span>
+          </div>
+        `).join('')}
+      </div>
+    `).join('<div style="height:1px;background:var(--border);margin-bottom:14px"></div>');
+  }
+
+  function openWaze() {
+    const dest = document.getElementById('input-dest').value.trim();
+    if (!dest) return showAlert('alert-nav', '⚠️ Entrez une destination.', 'error');
+
+    const avoidTolls = document.getElementById('toggle-tolls').classList.contains('on') ? 1 : 0;
+    const avoidHighways = document.getElementById('toggle-highways').classList.contains('on') ? 1 : 0;
+
+    const encoded = encodeURIComponent(dest);
+    let url = `https://waze.com/ul?q=${encoded}&navigate=yes`;
+    if (avoidTolls) url += '&avoid_toll_roads=1';
+    if (avoidHighways) url += '&avoid_highways=1';
+
+    window.open(url, '_blank');
+    showAlert('alert-nav', '🗺️ Ouverture de Waze...', 'info');
+  }
+
+  // Init
+  renderProfiles();
+  updateNavPanel();
+</script>
+<script>
+  // Enregistrement du Service Worker PWA
+  if ("serviceWorker" in navigator) {
+    window.addEventListener("load", () => {
+      navigator.serviceWorker.register("/sw.js")
+        .then(reg => console.log("WazeCC PWA prête ✅", reg.scope))
+        .catch(err => console.log("SW erreur:", err));
+    });
+  }
+</script>
+</body>
+</html>
+<script>
+  // PWA Install prompt
+  let deferredPrompt;
+  const banner = document.getElementById('install-banner');
+  const installBtn = document.getElementById('install-btn');
+
+  window.addEventListener('beforeinstallprompt', (e) => {
+    e.preventDefault();
+    deferredPrompt = e;
+    if (banner) banner.style.display = 'flex';
+  });
+
+  if (installBtn) {
+    installBtn.addEventListener('click', async () => {
+      if (!deferredPrompt) return;
+      deferredPrompt.prompt();
+      const { outcome } = await deferredPrompt.userChoice;
+      if (outcome === 'accepted') {
+        banner.style.display = 'none';
+      }
+      deferredPrompt = null;
+    });
+  }
+
+  window.addEventListener('appinstalled', () => {
+    if (banner) banner.style.display = 'none';
+    deferredPrompt = null;
+  });
+
+  // Hash navigation support (#navigation, #profils, #nouveau)
+  const hash = window.location.hash.replace('#', '');
+  if (['profils','nouveau','navigation'].includes(hash)) {
+    setTimeout(() => switchTab(hash), 100);
+  }
+</script>
